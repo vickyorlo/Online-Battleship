@@ -1,6 +1,6 @@
 ﻿namespace Online_Battleship
 {
-    partial class BattleshipForm
+    partial class OnlineBattleshipForm
     {
         /// <summary>
         /// Required designer variable.
@@ -8,7 +8,7 @@
         private System.ComponentModel.IContainer components = null;
 
         /// <summary>
-        /// Clean up any resources being used.
+        /// Clean up any resources being us ed.
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)

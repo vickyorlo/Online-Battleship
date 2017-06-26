@@ -67,7 +67,7 @@ namespace Online_Battleship
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new BattleshipForm());
+            Application.Run(new OnlineBattleshipForm());
         }
     }
 }

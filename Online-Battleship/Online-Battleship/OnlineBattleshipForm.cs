@@ -11,7 +11,7 @@ namespace Online_Battleship
     /// <summary>
     ///     The main form including UI control and game logic.
     /// </summary>
-    public partial class BattleshipForm : Form
+    partial class OnlineBattleshipForm : Form
     {
         #region Fields and Properties
 
@@ -158,11 +158,6 @@ namespace Online_Battleship
             public int Length;
 
             /// <summary>
-            ///     The name of the ship.
-            /// </summary>
-            public string Name;
-
-            /// <summary>
             ///     The starting row for this ship if set. Null if not yet placed.
             /// </summary>
             public int? Row;
@@ -176,9 +171,9 @@ namespace Online_Battleship
         #endregion
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="BattleshipForm" /> class
+        ///     Initializes a new instance of the <see cref="OnlineBattleshipForm" /> class
         /// </summary>
-        public BattleshipForm()
+        public OnlineBattleshipForm()
         {
             InitializeComponent();
             Rows = Cols = 10;
@@ -410,7 +405,7 @@ namespace Online_Battleship
         {
             try
             {
-                var listener = new TcpListener(IPAddress.Parse(textIPAddress.Text), (int) numericPort.Value);
+                var listener = new TcpListener(IPAddress.Parse(textIPAddress.Text), (int)numericPort.Value);
                 listener.Start();
                 client = listener.AcceptTcpClient();
                 stream = client.GetStream();
@@ -439,7 +434,7 @@ namespace Online_Battleship
         {
             try
             {
-                client = new TcpClient(textIPAddress.Text, (int) numericPort.Value);
+                client = new TcpClient(textIPAddress.Text, (int)numericPort.Value);
                 stream = client.GetStream();
             }
             catch (Exception)
@@ -500,9 +495,9 @@ namespace Online_Battleship
                     stream.Read(b, 0, 2);
 
                     // We need to call ComputerShoot() from the UI thread as it changes the GUI
-                    result = (Square) Invoke((Func<Square>) (() => playerField.EnemyShoot(b)));
+                    result = (Square)Invoke((Func<Square>)(() => playerField.EnemyShoot(b)));
 
-                    b[0] = (byte) result;
+                    b[0] = (byte)result;
                     b[1] = 255;
                     stream.Write(b, 0, 2);
 
@@ -534,7 +529,7 @@ namespace Online_Battleship
             textYourTurn.Enabled = true;
 
             // bgWorker_DoWork sets e.Result if computer won
-            if (e.Result == null || (Mode) e.Result != Mode.ComputerWon) return;
+            if (e.Result == null || (Mode)e.Result != Mode.ComputerWon) return;
             gameMode = Mode.ComputerWon;
             GameOver();
         }

@@ -45,12 +45,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BattleshipForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="BattleshipForm.Designer.cs" />
     <Compile Include="BattleshipPanel.cs">
       <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="OnlineBattleshipForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="OnlineBattleshipForm.Designer.cs">
+      <DependentUpon>OnlineBattleshipForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Player.cs" />
     <Compile Include="Program.cs" />
