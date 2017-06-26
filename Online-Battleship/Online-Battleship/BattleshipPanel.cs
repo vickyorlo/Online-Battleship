@@ -115,7 +115,7 @@ namespace Online_Battleship
         /// <param name="col">The column the player fires at.</param>
         /// <param name="row">The row the player fires at.</param>
         /// <param name="stream">The NetworkStream between players.</param>
-        /// <returns>The Square type that has been shot.</returns>
+        /// <returns>The shot Square.</returns>
         public Square PlayerShoot(int col, int row, NetworkStream stream)
         {
             Square hitType;
@@ -146,10 +146,9 @@ namespace Online_Battleship
         }
 
         /// <summary>
-        ///     Method used when the computer chooses where to shoot in the grid.
-        ///     Returns the type of square that the shot results in.
+        ///     Method used when the other player chooses where to shoot in the grid.
         /// </summary>
-        /// <returns>The Square type that the shot results in.</returns>
+        /// <returns>The shot Square.</returns>
         public Square EnemyShoot(byte[] b)
         {
             var hitType = Player.LaunchAtTarget(playField, b[0], b[1]);

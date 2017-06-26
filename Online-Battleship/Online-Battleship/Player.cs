@@ -15,7 +15,7 @@ namespace Online_Battleship
         /// <param name="grid">Game board grid.</param>
         /// <param name="row">Row to hit.</param>
         /// <param name="col">Column to hit.</param>
-        /// <returns>Returns if the shot is a hit, a miss, a sinking hit or is forbidden.</returns>
+        /// <returns>The shot Square.</returns>
         public static Square LaunchAtTarget(Square[,] grid, int row, int col)
         {
             // Is it a valid shot? 
@@ -44,7 +44,7 @@ namespace Online_Battleship
         /// <param name="grid">Game board grid.</param>
         /// <param name="row">Row to hit.</param>
         /// <param name="col">Column to hit.</param>
-        /// <returns>Returns true if the ship was sunk.</returns>
+        /// <returns>True if the ship was sunk.</returns>
         private static bool IsSunk(Square[,] grid, int row, int col)
         {
             bool[] testDir = {true, true, true, true};
@@ -105,7 +105,7 @@ namespace Online_Battleship
         /// <param name="grid">Game board grid.</param>
         /// <param name="row">Row of the grid.</param>
         /// <param name="col">Column of the grid.</param>
-        /// <returns>Returns the Square at grid[row, col] or Forbidden if out of bounds.</returns>
+        /// <returns>The Square, or Forbidden if out of bounds.</returns>
         private static Square GetSquare(Square[,] grid, int row, int col)
         {
             try

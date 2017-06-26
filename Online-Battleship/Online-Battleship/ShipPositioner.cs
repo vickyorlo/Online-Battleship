@@ -32,7 +32,7 @@ namespace Online_Battleship
         /// <param name="orientation">Orientation of the ship to place.</param>
         /// <param name="row">Topmost row.</param>
         /// <param name="col">Leftmost column.</param>
-        /// <returns>Returns false if the ship to place is too close to another ship or off the grid.</returns>
+        /// <returns>False if the ship cannot be placed. True otherwise.</returns>
         public bool SetShip(Square[,] grid, int shipLength, Orientation orientation, int row, int col)
         {
             // Is there a channel for the ship?
@@ -63,7 +63,7 @@ namespace Online_Battleship
         /// <param name="orientation">Orientation of the ship to place.</param>
         /// <param name="row">Topmost row.</param>
         /// <param name="col">Leftmost column.</param>
-        /// <returns>Returns true if ship can be placed.</returns>
+        /// <returns>False if the ship cannot be placed. True otherwise.</returns>
         public bool IsSettable(Square[,] grid, int shipLength, Orientation orientation, int row, int col)
         {
             try
@@ -99,7 +99,7 @@ namespace Online_Battleship
         /// <param name="grid">The playing field grid.</param>
         /// <param name="row">Least significant row.</param>
         /// <param name="col">Least significant column.</param>
-        /// <returns>Returns true if a ship was found and removed successfully.</returns>
+        /// <returns>True if a ship was removed successfully.</returns>
         public bool RemoveShip(Square[,] grid, int row, int col)
         {
             // If this is not the uppermost, leftmost (row, col) on the ship, 
