@@ -177,9 +177,8 @@ namespace Online_Battleship
         {
             InitializeComponent();
             Rows = Cols = 10;
-            NumberOfPatrolboats = 1;
-            NumberOfCruisers = 1;
-            NumberOfSubmarines = NumberOfCarriers = 0;
+            NumberOfPatrolboats = NumberOfCruisers = 3;
+            NumberOfSubmarines = NumberOfCarriers = 1;
             NumberOfShips = NumberOfPatrolboats + NumberOfCruisers + NumberOfSubmarines + NumberOfCarriers;
 
             RestartGame();
@@ -201,8 +200,10 @@ namespace Online_Battleship
             foreach (var ship in Ships)
                 shipLength[i++] = ship.Length;
 
-            playerField = new BattleshipPanel(SquareSize);
-            enemyField = new BattleshipPanel(SquareSize);
+            playerField = new BattleshipPanel(SquareSize,Rows,Cols);
+            enemyField = new BattleshipPanel(SquareSize,Rows,Cols);
+
+
 
             shipsSetCount = 0;
             shipsLostEnemy = 0;

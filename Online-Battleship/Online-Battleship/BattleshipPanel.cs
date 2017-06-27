@@ -30,7 +30,7 @@ namespace Online_Battleship
         /// <summary>
         ///     Number of rows and columns in the play field
         /// </summary>
-        private const int Rows = 10, Columns = 10;
+        private readonly int rows = 10, columns = 10;
 
         /// <summary>
         ///     The row and column where a ship is being placed.
@@ -94,8 +94,11 @@ namespace Online_Battleship
         /// <summary>
         ///     Initializes a new instance of the <see cref="BattleshipPanel" /> class.
         /// </summary>
-        public BattleshipPanel(int squareSize)
+        public BattleshipPanel(int squareSize, int rows, int columns)
         {
+            this.rows = rows;
+            this.columns = columns;
+
             // Force it to redraw the field if the size of the panel changes
             ResizeRedraw = true;
 
@@ -103,7 +106,7 @@ namespace Online_Battleship
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint,
                 true);
 
-            playField = new Square[Rows, Columns];
+            playField = new Square[this.rows, columns];
 
             SquareHeight = squareSize;
             SquareWidth = squareSize;
@@ -317,11 +320,11 @@ namespace Online_Battleship
         /// <param name="paintEvent">A System.Windows.Form.PaintEventArgs that contain the event data.</param>
         protected override void OnPaint(PaintEventArgs paintEvent)
         {
-            for (var row = 0; row < Rows; row++)
+            for (var row = 0; row < rows; row++)
             {
                 // Calculate where along the rows the image is placed
                 int rowPlace = row * SquareHeight;
-                for (var column = 0; column < Columns; column++)
+                for (var column = 0; column < columns; column++)
                 {
                     // Calculate where along the columns the image is placed
                     int columnPlace = column * SquareWidth;
@@ -385,8 +388,8 @@ namespace Online_Battleship
         /// </summary>
         private void RemoveArrows()
         {
-            for (var row = 0; row < Rows; row++)
-            for (var column = 0; column < Columns; column++)
+            for (var row = 0; row < rows; row++)
+            for (var column = 0; column < columns; column++)
                 if (playField[row, column] == Square.ArrowDown ||
                     playField[row, column] == Square.ArrowRight ||
                     playField[row, column] == Square.ArrowUp ||
