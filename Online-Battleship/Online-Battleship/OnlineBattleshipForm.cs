@@ -38,7 +38,7 @@ namespace Online_Battleship
         /// <summary>
         ///     The text displayed when the player wins and loses.
         /// </summary>
-        private const string PlayerWon = "You win!", ComputerWon = "You lose!";
+        private const string PlayerWon = "You win!", EnemyWon = "You lose!";
 
         /// <summary>
         ///     The lengths of the different ships
@@ -142,9 +142,9 @@ namespace Online_Battleship
             PlayerWon,
 
             /// <summary>
-            ///     The computer has won.
+            ///     The enemy has won.
             /// </summary>
-            ComputerWon
+            EnemyWon
         }
 
         /// <summary>
@@ -290,7 +290,7 @@ namespace Online_Battleship
         /// </summary>
         private void GameOver()
         {
-            lblGameOver.Text = gameMode == Mode.PlayerWon ? PlayerWon : ComputerWon;
+            lblGameOver.Text = gameMode == Mode.PlayerWon ? PlayerWon : EnemyWon;
             lblGameOver.Left = Size.Width / 2 - lblGameOver.Size.Width / 2;
             lblGameOver.Top = Size.Height / 2 - lblGameOver.Size.Height / 2;
             Thread.Sleep(500);
@@ -405,7 +405,7 @@ namespace Online_Battleship
         {
             try
             {
-                var listener = new TcpListener(IPAddress.Parse(textIPAddress.Text), (int)numericPort.Value);
+                var listener = new TcpListener(IPAddress.Any, (int)numericPort.Value);
                 listener.Start();
                 client = listener.AcceptTcpClient();
                 stream = client.GetStream();
@@ -494,7 +494,6 @@ namespace Online_Battleship
                     var b = new byte[2];
                     stream.Read(b, 0, 2);
 
-                    // We need to call ComputerShoot() from the UI thread as it changes the GUI
                     result = (Square)Invoke((Func<Square>)(() => playerField.EnemyShoot(b)));
 
                     b[0] = (byte)result;
@@ -505,32 +504,29 @@ namespace Online_Battleship
                     shipsLostPlayer++;
                     if (shipsLostPlayer != Ships.Length) continue;
                     // Player has lost all her ships. This triggers a GameOver() call in bgWorker_RunWorkerCompleted.
-                    e.Result = Mode.ComputerWon;
+                    e.Result = Mode.EnemyWon;
                     return;
                 } while (result == Square.Hit || result == Square.Sunk || result == Square.Forbidden);
             }
             catch (Exception)
             {
                 MessageBox.Show("Something bad happened! Your connection has been lost!");
-                e.Result = Mode.ComputerWon;
+                e.Result = Mode.EnemyWon;
             }
         }
 
         /// <summary>
-        ///     Fires when computer is done shooting. Evaluates if computer won and enables computerField so
-        ///     player can shoot again.
+        ///     Fires when the enemy is done shooting. Checks if they won.
         /// </summary>
         /// <param name="sender">Calling object.</param>
         /// <param name="e">Arguments passed.</param>
         private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            // Both player and computer are done shooting for now.
             enemyField.Enabled = true;
             textYourTurn.Enabled = true;
 
-            // bgWorker_DoWork sets e.Result if computer won
-            if (e.Result == null || (Mode)e.Result != Mode.ComputerWon) return;
-            gameMode = Mode.ComputerWon;
+            if (e.Result == null || (Mode)e.Result != Mode.EnemyWon) return;
+            gameMode = Mode.EnemyWon;
             GameOver();
         }
     }
