@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Online_Battleship
@@ -64,11 +65,6 @@ namespace Online_Battleship
         ///     Keeps track of how many ships the player and enemy have lost.
         /// </summary>
         private int shipsLostEnemy, shipsLostPlayer;
-
-        /// <summary>
-        ///     Separate thread to wait on the other player's move.
-        /// </summary>
-        private BackgroundWorker backgWorker;
 
         /// <summary>
         ///     The TCP connection to send data over.
@@ -200,8 +196,8 @@ namespace Online_Battleship
             foreach (var ship in Ships)
                 shipLength[i++] = ship.Length;
 
-            playerField = new BattleshipPanel(SquareSize,Rows,Cols);
-            enemyField = new BattleshipPanel(SquareSize,Rows,Cols);
+            playerField = new BattleshipPanel(SquareSize, Rows, Cols);
+            enemyField = new BattleshipPanel(SquareSize, Rows, Cols);
 
 
 
@@ -306,7 +302,7 @@ namespace Online_Battleship
         /// </summary>
         /// <param name="sender">A System.Object containing the sender date</param>
         /// <param name="e">A System.Windows.Forms.MouseEventArgs that contain the event data.</param>
-        private void UpdateForm(object sender, MouseEventArgs e)
+        private async void UpdateForm(object sender, MouseEventArgs e)
         {
             int row = e.Location.Y / enemyField.SquareHeight;
             int col = e.Location.X / enemyField.SquareWidth;
@@ -333,10 +329,9 @@ namespace Online_Battleship
                     textYourTurn.Enabled = false;
                     enemyField.Enabled = false;
 
-                    backgWorker = new BackgroundWorker();
-                    backgWorker.DoWork += BackgroundWorker_DoWork;
-                    backgWorker.RunWorkerCompleted += BackgroundWorker_RunWorkerCompleted;
-                    backgWorker.RunWorkerAsync();
+                    gameMode = await GetEnemyTurn();
+                    if (gameMode == Mode.EnemyWon) GameOver();
+
                 }
             }
             else if (sender.Equals(playerField) && gameMode == Mode.SettingShips)
@@ -402,22 +397,9 @@ namespace Online_Battleship
         /// </summary>
         /// <param name="sender">The sender object.</param>
         /// <param name="e">Arguments passed.</param>
-        private void BtnStartGame_Click(object sender, EventArgs e)
+        private async void BtnStartGame_Click(object sender, EventArgs e)
         {
-            try
-            {
-                var listener = new TcpListener(IPAddress.Any, (int)numericPort.Value);
-                listener.Start();
-                client = listener.AcceptTcpClient();
-                stream = client.GetStream();
-                listener.Stop();
-            }
-            catch (Exception)
-            {
-                MessageBox.Show("Cannot connect!");
-                return;
-            }
-
+            if (await StartHosting()) return;
 
             gameMode = Mode.Playing;
             btnStartGame.Enabled = false;
@@ -426,16 +408,34 @@ namespace Online_Battleship
             playerField.ClearForbiddenSquares();
         }
 
+        private async Task<bool> StartHosting()
+        {
+            try
+            {
+                var listener = new TcpListener(IPAddress.Any, (int) numericPort.Value);
+                listener.Start();
+                client = await listener.AcceptTcpClientAsync();
+                stream = client.GetStream();
+                listener.Stop();
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Cannot connect!");
+                return true;
+            }
+            return false;
+        }
+
         /// <summary>
         ///     Join an existing game session.
         /// </summary>
         /// <param name="sender">The sender object.</param>
         /// <param name="e">Arguments passed.</param>
-        private void btnJoinGame_Click(object sender, EventArgs e)
+        private async void btnJoinGame_Click(object sender, EventArgs e)
         {
             try
             {
-                client = new TcpClient(textIPAddress.Text, (int)numericPort.Value);
+                client = new TcpClient(textIPAddress.Text, (int) numericPort.Value);
                 stream = client.GetStream();
             }
             catch (Exception)
@@ -452,10 +452,9 @@ namespace Online_Battleship
 
             //Someone has to be second, and it is the joining player.
             enemyField.Enabled = false;
-            backgWorker = new BackgroundWorker();
-            backgWorker.DoWork += BackgroundWorker_DoWork;
-            backgWorker.RunWorkerCompleted += BackgroundWorker_RunWorkerCompleted;
-            backgWorker.RunWorkerAsync();
+
+            gameMode = await GetEnemyTurn();
+            if (gameMode == Mode.EnemyWon) GameOver();
         }
 
 
@@ -483,9 +482,7 @@ namespace Online_Battleship
         /// <summary>
         ///     Let the network player do their turn.
         /// </summary>
-        /// <param name="sender">Calling object.</param>
-        /// <param name="e">Arguments passed.</param>
-        private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        private async Task<Mode> GetEnemyTurn()
         {
             try
             {
@@ -493,42 +490,32 @@ namespace Online_Battleship
                 do
                 {
                     var b = new byte[2];
-                    stream.Read(b, 0, 2);
+                    await stream.ReadAsync(b, 0, 2);
 
-                    result = (Square)Invoke((Func<Square>)(() => playerField.EnemyShoot(b)));
 
-                    b[0] = (byte)result;
+                    result = (Square) Invoke((Func<Square>) (() => playerField.EnemyShoot(b)));
+
+                    b[0] = (byte) result;
                     b[1] = 255;
                     stream.Write(b, 0, 2);
 
                     if (result != Square.Sunk) continue;
                     shipsLostPlayer++;
                     if (shipsLostPlayer != Ships.Length) continue;
-                    // Player has lost all her ships. This triggers a GameOver() call in bgWorker_RunWorkerCompleted.
-                    e.Result = Mode.EnemyWon;
-                    return;
+
+                    // Player has lost all thier ships.
+                    return Mode.EnemyWon;
                 } while (result == Square.Hit || result == Square.Sunk || result == Square.Forbidden);
+                enemyField.Enabled = true;
+                textYourTurn.Enabled = true;
+
+                return Mode.Playing;
             }
             catch (Exception)
             {
-                MessageBox.Show("Something bad happened! Your connection has been lost!");
-                e.Result = Mode.EnemyWon;
+                MessageBox.Show("Your connection has been lost!");
+                return Mode.EnemyWon;
             }
-        }
-
-        /// <summary>
-        ///     Fires when the enemy is done shooting. Checks if they won.
-        /// </summary>
-        /// <param name="sender">Calling object.</param>
-        /// <param name="e">Arguments passed.</param>
-        private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            enemyField.Enabled = true;
-            textYourTurn.Enabled = true;
-
-            if (e.Result == null || (Mode)e.Result != Mode.EnemyWon) return;
-            gameMode = Mode.EnemyWon;
-            GameOver();
         }
     }
 }
